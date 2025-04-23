@@ -16,7 +16,7 @@ git submodule update
 Alternatively, you can use the following command when cloning:
 
 ```bash
-git clone --recursive https://github.com/yourusername/MT2022.git
+git clone --recursive https://github.com/vitroid/MT2022.git
 ```
 
 - (2025-04-23) Updated.
