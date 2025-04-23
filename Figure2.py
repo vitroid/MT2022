@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from vdwp.physconst import NkB, NA
-from vdwp.general import drawLine
+from vdwp import drawLine
 
 
 # basicConfig(level=DEBUG, format="%(levelname)s %(message)s")
@@ -41,15 +41,16 @@ II+IV-b 0.15 0.10 0.06 0.04   6.0 2.7 2.0 1.5 3.05 1.98 4.61 4.96
 
 print(karttunen)
 
-ratios = {"I": (1.0, 0.0, 0.0),
-          "II": (0.0, 1.0, 0.0),
-          "IV": (0.0, 0.0, 1.0),
-          "III": (23 / 43, 0.0, 20 / 43),
-          "V": (0.0, 1.0, 0.0),
-          "II-4H": (0.0, 1.0, 0.0),
-          "II+IV-a": (0, 0.739130435, 0.260869565),
-          "II+IV-b": (0, 0.459459459, 0.540540541),
-          }
+ratios = {
+    "I": (1.0, 0.0, 0.0),
+    "II": (0.0, 1.0, 0.0),
+    "IV": (0.0, 0.0, 1.0),
+    "III": (23 / 43, 0.0, 20 / 43),
+    "V": (0.0, 1.0, 0.0),
+    "II-4H": (0.0, 1.0, 0.0),
+    "II+IV-a": (0, 0.739130435, 0.260869565),
+    "II+IV-b": (0, 0.459459459, 0.540540541),
+}
 
 # plt.rcParams['text.usetex'] = True
 plt.rcParams["font.size"] = 14
@@ -57,7 +58,7 @@ plt.rcParams["font.family"] = "sans-serif"
 
 fig = plt.figure(figsize=(7, 7))
 gs = fig.add_gridspec(2, 2, hspace=0, wspace=0)
-(ax1, ax2), (ax3, ax4) = gs.subplots(sharex='col', sharey='row')
+(ax1, ax2), (ax3, ax4) = gs.subplots(sharex="col", sharey="row")
 
 
 xra = (-0.02, 0.06)
@@ -65,15 +66,7 @@ yra = (0.0, 0.08)
 
 for element, panel in zip(elements, (ax1, ax2, ax3, ax4)):
     structures = karttunen[element].keys()
-    colors = (
-        "black",
-        "red",
-        "blue",
-        "green",
-        "pink",
-        "orange",
-        "purple",
-        "brown")
+    colors = ("black", "red", "blue", "green", "pink", "orange", "purple", "brown")
     for x in np.linspace(*xra, 40):
         for y in np.linspace(*yra, 40):
             smin = -1
@@ -86,7 +79,8 @@ for element, panel in zip(elements, (ax1, ax2, ax3, ax4)):
             panel.plot(x, y, "o", color=colors[smin])
 
 for element, panel, label in zip(
-        elements, (ax1, ax2, ax3, ax4), ("(a)", "(b)", "(c)", "(d)")):
+    elements, (ax1, ax2, ax3, ax4), ("(a)", "(b)", "(c)", "(d)")
+):
     structures = karttunen[element].keys()
     for s1, s2 in combinations(structures, 2):
         panel.set_xlim(*xra)
@@ -96,11 +90,21 @@ for element, panel, label in zip(
         A = ratios[s1][0] - ratios[s2][0]
         B = ratios[s1][1] - ratios[s2][1]
         C = karttunen[element][s1] - karttunen[element][s2]
-        drawLine(A, B, C, style='-', ax=panel, xtick=np.linspace(*xra, 100), ytick=np.linspace(*yra, 100))
-    panel.annotate(f"{label} {element}",  # this is the text
-                   (0.8, 0.2),  # these are the coordinates to position the label
-                   xycoords="axes fraction",  # how to position the text
-                   ha='center')  # horizontal alignment can be left, right or center
+        drawLine(
+            A,
+            B,
+            C,
+            style="-",
+            ax=panel,
+            xtick=np.linspace(*xra, 100),
+            ytick=np.linspace(*yra, 100),
+        )
+    panel.annotate(
+        f"{label} {element}",  # this is the text
+        (0.8, 0.2),  # these are the coordinates to position the label
+        xycoords="axes fraction",  # how to position the text
+        ha="center",
+    )  # horizontal alignment can be left, right or center
 
 
 plt.show()

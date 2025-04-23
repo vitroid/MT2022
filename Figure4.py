@@ -78,11 +78,13 @@ LJ = namedtuple("LJ", ["sig", "epsK"])
 structures = ["CS2", "CS1", "HS1", "TS1"]  # , "TS1", "HS1"]
 
 ####### chemical potential of gas ######################################
-stericterm = chempot.StericFix(temperatures, mass=1.0, symm=1, moi=(0, 0, 0))
+stericterm = chempot.molecular_chemical_potential_corrections(
+    temperatures, mass=1.0, symmetry_number=1, moment_of_inertia=(0, 0, 0)
+)
 
 mu_g = (
-    chempot.chempot(temperatures, pressure)
-    + chempot.IntegrationFixMinus(temperatures, dimen=0)
+    chempot.ideal_gas_chemical_potential(temperatures, pressure)
+    + chempot.phase_space_integration_correction(temperatures, degrees_of_freedom=0)
     + stericterm
 )
 
@@ -114,23 +116,35 @@ def DoubleClathrate(
         p2 = r * pressure
 
         if p1 == 0:
-            mu2 = chempot.chempot(temperatures, p2) + chempot.IntegrationFixMinus(
-                temperatures, dimen=0
+            mu2 = chempot.ideal_gas_chemical_potential(
+                temperatures, p2
+            ) + chempot.phase_space_integration_correction(
+                temperatures, degrees_of_freedom=0
             )
-            Deltamu = vdWP.ChemPotByOccupation(temperatures, f2, mu2, structures)
+            Deltamu = vdWP.calculate_chemical_potential_by_occupation(
+                temperatures, f2, mu2, structures
+            )
         elif p2 == 0:
-            mu1 = chempot.chempot(temperatures, p1) + chempot.IntegrationFixMinus(
-                temperatures, dimen=0
+            mu1 = chempot.ideal_gas_chemical_potential(
+                temperatures, p1
+            ) + chempot.phase_space_integration_correction(
+                temperatures, degrees_of_freedom=0
             )
-            Deltamu = vdWP.ChemPotByOccupation(temperatures, f1, mu1, structures)
+            Deltamu = vdWP.calculate_chemical_potential_by_occupation(
+                temperatures, f1, mu1, structures
+            )
         else:
-            mu1 = chempot.chempot(temperatures, p1) + chempot.IntegrationFixMinus(
-                temperatures, dimen=0
+            mu1 = chempot.ideal_gas_chemical_potential(
+                temperatures, p1
+            ) + chempot.phase_space_integration_correction(
+                temperatures, degrees_of_freedom=0
             )
-            mu2 = chempot.chempot(temperatures, p2) + chempot.IntegrationFixMinus(
-                temperatures, dimen=0
+            mu2 = chempot.ideal_gas_chemical_potential(
+                temperatures, p2
+            ) + chempot.phase_space_integration_correction(
+                temperatures, degrees_of_freedom=0
             )
-            Deltamu = vdWP.ChemPotByOccupation(
+            Deltamu = vdWP.calculate_chemical_potential_by_occupation(
                 temperatures, (f1, f2), (mu1, mu2), structures
             )
 

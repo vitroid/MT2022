@@ -10,7 +10,7 @@ import vdwp.vdWP as vdWP
 import vdwp.crystals as crystals
 from vdwp.physconst import NkB, NA
 import vdwp.chempot as chempot
-from vdwp.general import drawLine
+from vdwp import drawLine
 
 # basicConfig(level=DEBUG, format="%(levelname)s %(message)s")
 basicConfig(level=INFO, format="%(levelname)s %(message)s")
@@ -49,7 +49,9 @@ plt.axis("square")
 temperatures = 273.15
 
 ####### chemical potential of gas ######################################
-stericterm = chempot.StericFix(temperatures, mass=1.0, symm=1, moi=(0, 0, 0))
+stericterm = chempot.molecular_chemical_potential_corrections(
+    temperatures, mass=1.0, symmetry_number=1, moment_of_inertia=(0, 0, 0)
+)
 
 ####### structure-dependent terms ######################################
 
