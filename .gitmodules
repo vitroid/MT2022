@@ -1,0 +1,3 @@
+[submodule "vdwp-module"]
+	path = vdwp-module
+	url = https://github.com/vitroid/vdwp.git
