@@ -1,1 +1,7 @@
 poetry.lock
+*.pdf
+*.png
+*.log
+*.histo
+*.lock
+*.pyc

@@ -1,5 +1,5 @@
-from attrdict import AttrDict
 from vdwp.physconst import NkB, NA, kB
+from collections import namedtuple
 
 # LJ parameters
 
@@ -18,7 +18,8 @@ CS2      4.438 488 $\\mathrm{CS_2}$
 cC3H6    4.582733199595731 301.51400454201365 $c\\mathrm{C_3H_6}$ # from CP
 """.splitlines()
 
-tip4pice = AttrDict({"sig": 3.1668, "epsK": 106.1})
+LJ = namedtuple("LennardJones", ["sig", "epsK", "TeX"])
+tip4pice = LJ(sig=3.1668, epsK=106.1, TeX=r"$\mathrm{tip4pice}$")
 
 gases = dict()
 inter = dict()
@@ -34,11 +35,12 @@ for gas in gastable:
         cols.append(tex)
     # print(len(cols))
     name, sig, epsK, tex = cols
-    gases[name] = AttrDict(
-        {"sig": float(sig), "epsK": float(epsK), "TeX": tex})
-    inter[name] = AttrDict({"sig": (float(sig) + tip4pice.sig) / 2,
-                            "epsK": (float(epsK) * tip4pice.epsK)**0.5,
-                            "TeX": tex})
+    gases[name] = LJ(sig=float(sig), epsK=float(epsK), TeX=tex)
+    inter[name] = LJ(
+        sig=(float(sig) + tip4pice.sig) / 2,
+        epsK=(float(epsK) * tip4pice.epsK) ** 0.5,
+        TeX=tex,
+    )
 
 if __name__ == "__main__":
 
@@ -71,9 +73,11 @@ if __name__ == "__main__":
         eps = tc / Tc  # in kJ/mol
         Pc = 0.129  # P*, P* = P sig**3 / eps
         # epsをkJ/molからJ / moleculeに換算。これはそれらしい数値。
-        sig = (Pc * eps * kB / pc)**(1 / 3) * 1e10
+        sig = (Pc * eps * kB / pc) ** (1 / 3) * 1e10
         print(sig, eps)
         print(
-            f"{name} sig: From CP {sig} ours {gases[name].sig} ratio {gases[name].sig/sig}")
+            f"{name} sig: From CP {sig} ours {gases[name].sig} ratio {gases[name].sig/sig}"
+        )
         print(
-            f"{name} eps: From CP {eps} ours {gases[name].epsK} ratio {gases[name].epsK/eps}")
+            f"{name} eps: From CP {eps} ours {gases[name].epsK} ratio {gases[name].epsK/eps}"
+        )
