@@ -14,7 +14,7 @@ import vdwp.crystals as crystals
 import vdwp.chempot as chempot
 from ljd.ljd import fvalue
 from LJparam import gases, inter, tip4pice
-from Figure3 import MultipleClathrate
+
 
 # basicConfig(level=DEBUG, format="%(levelname)s %(message)s")
 basicConfig(level=INFO, format="%(levelname)s %(message)s")
@@ -22,7 +22,7 @@ logger = getLogger()
 logger.debug("Debug mode.")
 
 
-def determine_phase(mu_e, Deltamu, structures):
+def determine_stable_phase(mu_e, Deltamu, structures):
     mumin = 0
     stmin = None
     for s in structures:
@@ -96,8 +96,13 @@ plt.rcParams["font.size"] = 14
 plt.rcParams["font.family"] = "sans-serif"
 
 
-def DoubleClathrate(
-    g1, g2, beta, pressure, ticks=np.linspace(0.0, 1.0, 100), terminate=None
+def calculate_mixed_clathrate_phase(
+    g1,
+    g2,
+    beta,
+    pressure,
+    composition_ratios=np.linspace(0.0, 1.0, 100),
+    target_phase=None,
 ):
     f1 = dict()
     f2 = dict()
@@ -111,7 +116,7 @@ def DoubleClathrate(
         )
 
     phases = []
-    for r in ticks:
+    for r in composition_ratios:
         p1 = (1 - r) * pressure
         p2 = r * pressure
 
@@ -148,14 +153,14 @@ def DoubleClathrate(
                 temperatures, (f1, f2), (mu1, mu2), structures
             )
 
-        phase = determine_phase(mu_e, Deltamu, structures)
+        phase = determine_stable_phase(mu_e, Deltamu, structures)
         phases.append(phase)
-        if terminate == phase:
+        if target_phase == phase:
             break
     return phases, phase
 
 
-def mark(sig, epsK, phases, lastphase, ax):
+def plot_phase_marker(sig, epsK, phases, lastphase, ax):
     markers = {1: "o", 2: "+", 3: "^"}
     if lastphase == "CS1":
         color = "lightgreen"
@@ -175,7 +180,7 @@ def mark(sig, epsK, phases, lastphase, ax):
             print(sig, epsK, phases, lastphase)
 
 
-def cities(ax, gases):
+def plot_guest_molecules(ax, gases):
     """
     Put cities (i.e. locus of the molecules) on the map.
     """
@@ -201,7 +206,7 @@ def cities(ax, gases):
         )  # horizontal alignment can be left, right or center
 
 
-def contourfill(ax, X, Y, Z, Z2):
+def plot_phase_contours(ax, X, Y, Z, Z2):
     # Phases of the 2nd component
     contours = ax.contour(X, Y, Z2, levels=[1.5, 2.5], colors="black", linewidths=2)
     # Number of phases by mixing
@@ -237,7 +242,9 @@ ax.set_xlabel(r"$\sigma_g / \AA$")
 ax.set_ylabel(r"$\epsilon_g / K$")
 ax.set_xlim(3.45, 5.1)
 ax.set_ylim(120.0, 600)
-ticks = np.concatenate([np.array([0.0]), np.logspace(-4, 0.0, 300)])  # 1e-4 .. 1e0
+composition_ratios = np.concatenate(
+    [np.array([0.0]), np.logspace(-4, 0.0, 300)]
+)  # 1e-4 .. 1e0
 x = np.linspace(3.45, 5.1, xyticks * 2)
 y = np.linspace(120.0, 600, xyticks * 2)
 X, Y = np.meshgrid(x, y)
@@ -245,13 +252,18 @@ Z = np.zeros_like(X)
 for ix, sig in enumerate(x):
     for iy, epsK in enumerate(y):
         inter2 = LJ(sig=(tip4pice.sig + sig) / 2, epsK=(tip4pice.epsK * epsK) ** 0.5)
-        phases, lastphase = DoubleClathrate(
-            inter2, inter[guest], beta, pressure, ticks=ticks, terminate="CS2"
+        phases, lastphase = calculate_mixed_clathrate_phase(
+            inter2,
+            inter[guest],
+            beta,
+            pressure,
+            composition_ratios=composition_ratios,
+            target_phase="CS2",
         )
         z = 1.0
         for i, phase in enumerate(phases):
             if phase == "CS2":
-                z = ticks[i]
+                z = composition_ratios[i]
                 break
         Z[iy, ix] = z
 
@@ -290,7 +302,7 @@ cs = ax.contourf(
     extend="min",
 )
 
-cities(ax=ax, gases=gases)
+plot_guest_molecules(ax=ax, gases=gases)
 
 ax.annotate(
     "(a) X + Q",  # this is the text
@@ -316,8 +328,8 @@ Z2 = np.zeros_like(X)
 for ix, sig in enumerate(x):
     for iy, epsK in enumerate(y):
         inter2 = LJ(sig=(tip4pice.sig + sig) / 2, epsK=(tip4pice.epsK * epsK) ** 0.5)
-        phases, lastphase = DoubleClathrate(
-            inter[guest], inter2, beta, pressure, ticks=ticks
+        phases, lastphase = calculate_mixed_clathrate_phase(
+            inter[guest], inter2, beta, pressure, composition_ratios=composition_ratios
         )
         Z[iy, ix] = len(set(phases))
         if lastphase == "CS1":
@@ -328,8 +340,8 @@ for ix, sig in enumerate(x):
             z = 3
         Z2[iy, ix] = z
         # mark(sig, epsK, set(phases), lastphase, ax=ax)
-cities(ax=ax, gases=gases)
-contourfill(ax, X, Y, Z, Z2)
+plot_guest_molecules(ax=ax, gases=gases)
+plot_phase_contours(ax, X, Y, Z, Z2)
 ax.annotate(
     "(b) Me + X",  # this is the text
     xy=(0.6, 0.92),  # these are the coordinates to position the label
@@ -356,8 +368,8 @@ Z2 = np.zeros_like(X)
 for ix, sig in enumerate(x):
     for iy, epsK in enumerate(y):
         inter2 = LJ(sig=(tip4pice.sig + sig) / 2, epsK=(tip4pice.epsK * epsK) ** 0.5)
-        phases, lastphase = DoubleClathrate(
-            inter[guest], inter2, beta, pressure, ticks=ticks
+        phases, lastphase = calculate_mixed_clathrate_phase(
+            inter[guest], inter2, beta, pressure, composition_ratios=composition_ratios
         )
         # mark(sig, epsK, set(phases), lastphase, ax=ax)
         Z[iy, ix] = len(set(phases))
@@ -373,8 +385,8 @@ for ix, sig in enumerate(x):
 #                cmap=cm.gray, extent=(4.55, 5.05, 120.0, 600.0))
 
 
-cities(ax=ax, gases=gases)
-contourfill(ax, X, Y, Z, Z2)
+plot_guest_molecules(ax=ax, gases=gases)
+plot_phase_contours(ax, X, Y, Z, Z2)
 ax.annotate(
     "(c) Xe + X",  # this is the text
     xy=(0.4, 0.92),  # these are the coordinates to position the label
