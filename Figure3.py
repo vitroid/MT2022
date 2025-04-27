@@ -296,4 +296,4 @@ for a, b in [
 plt.tight_layout()
 plt.show()
 fig.savefig("Figure3.pdf")
-fig.savefig("Figure3.png")
+# fig.savefig("Figure3.png")
