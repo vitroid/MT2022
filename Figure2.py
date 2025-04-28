@@ -17,7 +17,7 @@ logger = getLogger()
 logger.debug("Debug mode.")
 
 
-def plot_phase_diagram_Figure2(fig):
+def plot_phase_diagram_Figure2(axes):
     # Karttunen, A. J., Fässler, T. F., Linnolahti, M. & Pakkanen, T. A. Structural principles of semiconducting Group 14 clathrate frameworks. Inorg. Chem. 50, 1733–1742 (2011)
     # Table 2
     elements = ["C", "Si", "Ge", "Sn"]
@@ -53,8 +53,7 @@ def plot_phase_diagram_Figure2(fig):
         "II+IV-b": (0, 0.459459459, 0.540540541),
     }
 
-    gs = fig.add_gridspec(2, 2, hspace=0, wspace=0)
-    (ax1, ax2), (ax3, ax4) = gs.subplots(sharex="col", sharey="row")
+    ((ax1, ax2), (ax3, ax4)) = axes
 
     xra = (-0.02, 0.06)
     yra = (0.0, 0.08)
@@ -107,7 +106,9 @@ if __name__ == "__main__":
     plt.rcParams["font.size"] = 14
     plt.rcParams["font.family"] = "sans-serif"
 
-    fig, ax = plt.subplots(figsize=(7, 7))
-    plot_phase_diagram_Figure2(fig)
+    fig = plt.figure(figsize=(7, 7))
+    gs = fig.add_gridspec(2, 2, hspace=0, wspace=0)
+    axes = gs.subplots(sharex="col", sharey="row")
+    plot_phase_diagram_Figure2(axes)
     plt.show()
     fig.savefig("Figure2.pdf")
