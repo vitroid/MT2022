@@ -23,13 +23,13 @@ logger.debug("Debug mode.")
 
 
 def determine_stable_phase(mu_e, Deltamu, structures):
-    mumin = 0
-    stmin = None
+    minimum_mu_w = 0
+    most_stable_structure = None
     for s in structures:
-        if mu_e[s] + Deltamu[s] < mumin:
-            mumin = mu_e[s] + Deltamu[s]
-            stmin = s
-    return stmin
+        if mu_e[s] + Deltamu[s] < minimum_mu_w:
+            minimum_mu_w = mu_e[s] + Deltamu[s]
+            most_stable_structure = s
+    return most_stable_structure
 
 
 """
@@ -47,9 +47,8 @@ _c   : in the cage
 
 
 def calculate_mixed_clathrate_phase(
-    g1,
-    g2,
-    beta,
+    guest1,
+    guest2,
     pressure,
     temperatures,
     mu_e,
@@ -57,15 +56,17 @@ def calculate_mixed_clathrate_phase(
     composition_ratios=np.linspace(0.0, 1.0, 100),
     target_phase=None,
 ):
+    beta = 1.0 / (NkB * temperatures)
+
     f1 = dict()
     f2 = dict()
     for cage, radius in crystals.radii.items():
         # sigma and epsilon must be the intermolecular ones.
         f1[cage] = fvalue(
-            {radius: crystals.nmemb[cage]}, g1.sig, g1.epsK * 8.314 / 1000, beta
+            {radius: crystals.nmemb[cage]}, guest1.sig, guest1.epsK * 8.314 / 1000, beta
         )
         f2[cage] = fvalue(
-            {radius: crystals.nmemb[cage]}, g2.sig, g2.epsK * 8.314 / 1000, beta
+            {radius: crystals.nmemb[cage]}, guest2.sig, guest2.epsK * 8.314 / 1000, beta
         )
 
     phases = []
@@ -185,7 +186,6 @@ def plot_phase_diagram_Figure4a(
     ax,
     temperatures,
     pressure,
-    beta,
     mu_e,
     structures,
     inter,
@@ -213,7 +213,6 @@ def plot_phase_diagram_Figure4a(
             phases, lastphase = calculate_mixed_clathrate_phase(
                 inter2,
                 inter[guest],
-                beta,
                 pressure,
                 temperatures,
                 mu_e,
@@ -278,7 +277,6 @@ def plot_phase_diagram_Figure4b(
     ax,
     temperatures,
     pressure,
-    beta,
     mu_e,
     structures,
     inter,
@@ -306,7 +304,6 @@ def plot_phase_diagram_Figure4b(
             phases, lastphase = calculate_mixed_clathrate_phase(
                 inter[guest],
                 inter2,
-                beta,
                 pressure,
                 temperatures,
                 mu_e,
@@ -336,7 +333,6 @@ def plot_phase_diagram_Figure4c(
     ax,
     temperatures,
     pressure,
-    beta,
     mu_e,
     structures,
     inter,
@@ -364,7 +360,6 @@ def plot_phase_diagram_Figure4c(
             phases, lastphase = calculate_mixed_clathrate_phase(
                 inter[guest],
                 inter2,
-                beta,
                 pressure,
                 temperatures,
                 mu_e,
@@ -394,7 +389,6 @@ if __name__ == "__main__":
     # User variables
     pressure = 101325.00 * 50  # Pa
     temperatures = 273.15
-    beta = 1.0 / (NkB * temperatures)
 
     LJ = namedtuple("LJ", ["sig", "epsK"])
 
@@ -432,7 +426,6 @@ if __name__ == "__main__":
         axes[0],
         temperatures,
         pressure,
-        beta,
         mu_e,
         structures,
         inter,
@@ -445,7 +438,6 @@ if __name__ == "__main__":
         axes[1],
         temperatures,
         pressure,
-        beta,
         mu_e,
         structures,
         inter,
@@ -458,7 +450,6 @@ if __name__ == "__main__":
         axes[2],
         temperatures,
         pressure,
-        beta,
         mu_e,
         structures,
         inter,
