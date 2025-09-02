@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 from vdwp import vdWP, crystals, drawLine, chempot
 from vdwp.physconst import NkB, NA
-from ljd.ljd import fvalue
+from ljd.ljd import fvalue2
 from LJparam import inter
 
 
@@ -58,8 +58,8 @@ def MultipleClathrate(gases, pressures, temperatures, structures):
             ff = dict()
             for cage, R in crystals.radii.items():
                 # sigma and epsilon must be the intermolecular ones.
-                ff[cage] = fvalue(
-                    {R: crystals.nmemb[cage]}, gas.sig, gas.epsK * 8.314 / 1000, beta
+                ff[cage] = fvalue2(
+                    R, crystals.nmemb[cage], gas.sig, gas.epsK * 8.314 / 1000, beta
                 )
             f.append(ff)
     Deltamu = vdWP.calculate_chemical_potential_by_occupation(
@@ -148,7 +148,7 @@ def plot_phase_diagram_Figure3(axes):
             f_c = dict()
             for cage, R in crystals.radii.items():
                 f_c[cage] = (
-                    fvalue({R: crystals.nmemb[cage]}, sigma, epsilon, beta) + stericterm
+                    fvalue2(R, crystals.nmemb[cage], sigma, epsilon, beta) + stericterm
                 )
             pressures = (50, 30, 10)
             if name == "cC3H6":
